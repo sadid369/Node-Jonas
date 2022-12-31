@@ -26,28 +26,46 @@ exports.getAllTours = async (req, res) => {
   try {
     console.log(req.query);
     //BUILD QUERY
-    //1) Filtering
+    //1A) Filtering
     const queryObj = { ...req.query };
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach((el) => delete queryObj[el]);
     console.log(queryObj, req.query);
-    // 2) advance filtering
+    // 1B) advance filtering
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    let query = Tour.find(JSON.parse(queryStr));
     console.log(JSON.parse(queryStr));
 
-    //{difficulty:'easy', duration:{$gte:5}}
-    //{ difficulty: 'easy', duration: { gte: '5' } }
-    //gte, gt,lte,lt
-
+    //2) Sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(',').join(' ');
+      console.log(sortBy);
+      query = query.sort(sortBy);
+      //sort('price ratingAverage')
+    } else {
+      query = query.sort('-createdAt');
+    }
+    // 3) Field Limiting
+    if (req.query.fields) {
+      const fields = req.query.fields.split(',').join(' ');
+      query = query.select(fields);
+    } else {
+      query = query.select('-__v');
+    }
+    // 4) Pagination
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit || 100;
+    const skip = (page - 1) * limit;
+    // page=2 &  limit=10
+    query = query.skip(skip).limit(limit);
+    if (req.query.page) {
+      const numTours = await Tour.countDocuments();
+      if (skip >= numTours) throw new Error('This page does not exit');
+    }
     //EXECUTE QUERY
-    const query = Tour.find(JSON.parse(queryStr));
+
     const tours = await query;
-    // const query = Tour.find()
-    //   .where('duration')
-    //   .equals(5)
-    //   .where('difficulty')
-    //   .equals('easy');
 
     //SEND QUERY
     res.status(200).json({
