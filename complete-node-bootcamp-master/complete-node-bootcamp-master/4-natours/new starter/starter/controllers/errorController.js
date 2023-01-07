@@ -14,7 +14,6 @@ const sendErrorDev = (err, res) => {
 const sendErrorProd = (err, res) => {
   //Operational , trusted error: send message to the client
   if (err.isOperational) {
-    console.log(`sendProd ${err.isOperational}`);
     res.status(err.statusCode).json({
       status: err.status,
       message: err.message,
@@ -46,9 +45,6 @@ module.exports = (err, req, res, next) => {
     // console.log(error.name);
     if (err.name === 'CastError') {
       err = handleCastErrorDB(err);
-      console.log(`Exports ${err.isOperational}`);
-      console.log(`Exports ${err.status}`);
-      console.log(`Exports ${err.statusCode}`);
     }
 
     sendErrorProd(err, res);
