@@ -16,7 +16,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
-    role:req.body.role,
+    role: req.body.role,
   });
   const token = signToken(newUser._id);
 
@@ -84,15 +84,32 @@ exports.protect = catchAsync(async (req, res, next) => {
   //GRANT ACCESS TO PROTECTED ROUTE
   req.user = currentUser;
   next();
-})
+});
 
-exports.restrictTo= (...roles)=>{
-  return (req,res,next)=>{
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
     //roles ['admin','Lead-guide']. role = 'users'
 
-    if(!roles.includes(req.user.role)){
-      return next(new AppError('You do not have permission to perform this action', 403))
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
     }
-  next()
+    next();
+  };
+};
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  console.log(req.body.email);
+  // 1) get user based on Posted email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError('There is no user with this email address', 404));
   }
-}
+  // 2) Generate the token
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+  // 3)Send to the user's email
+  next();
+});
+exports.resetPassword = (req, res, next) => {};
