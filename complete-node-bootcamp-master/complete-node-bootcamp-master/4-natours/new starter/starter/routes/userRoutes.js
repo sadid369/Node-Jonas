@@ -8,6 +8,11 @@ routes.post('/signup', authController.signup);
 routes.post('/login', authController.login);
 routes.post('/forgotPassword', authController.forgotPassword);
 routes.patch('/resetPassword/:token', authController.resetPassword);
+routes.patch(
+  '/updateMyPassword',
+  authController.protect,
+  authController.updatePassword
+);
 routes
   .route('/')
   .get(userController.getAllUsers)
