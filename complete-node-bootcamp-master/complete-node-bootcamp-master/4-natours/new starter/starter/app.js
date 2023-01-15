@@ -1,5 +1,8 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
 const helmet = require('helmet');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -26,6 +29,20 @@ console.log(process.env.NODE_ENV);
 
 app.use(cookieParser());
 app.use(express.json({ limit: '10kb' }));
+app.use(mongoSanitize());
+app.use(xss());
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingQuantity',
+      'ratingAverage',
+      'maxGroupSize',
+      'difficulty',
+      'price',
+    ],
+  })
+);
 app.use(express.static(`${__dirname}/public/`));
 app.use((req, res, next) => {
   console.log('Hello from middleware');
