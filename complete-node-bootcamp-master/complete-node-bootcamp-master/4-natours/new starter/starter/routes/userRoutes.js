@@ -8,13 +8,13 @@ routes.post('/signup', authController.signup);
 routes.post('/login', authController.login);
 routes.post('/forgotPassword', authController.forgotPassword);
 routes.patch('/resetPassword/:token', authController.resetPassword);
-routes.patch(
-  '/updateMyPassword',
-  authController.protect,
-  authController.updatePassword
-);
-routes.patch('/updateMe', authController.protect, userController.updateMe);
-routes.delete('/deleteMe', authController.protect, userController.deleteMe);
+
+routes.use(authController.protect);
+routes.patch('/updateMyPassword', authController.updatePassword);
+routes.get('/me', userController.getMe, userController.getUser);
+routes.patch('/updateMe', userController.updateMe);
+routes.delete('/deleteMe', userController.deleteMe);
+routes.use(authController.restrictTo('admin'));
 routes
   .route('/')
   .get(userController.getAllUsers)
