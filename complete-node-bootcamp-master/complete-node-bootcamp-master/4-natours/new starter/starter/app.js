@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
@@ -6,13 +7,15 @@ const hpp = require('hpp');
 const helmet = require('helmet');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
-const app = express();
 const morgan = require('morgan');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
+const app = express();
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
 dotenv.config();
 app.use(helmet());
 const limiter = rateLimit({
